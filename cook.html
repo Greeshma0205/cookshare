@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html ng-app="recipeApp">
+<head>
+    <title>My Recipe Book</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Enhanced Styles */
+        :root {
+            --primary-color: #e74c3c;
+            --primary-dark: #c0392b;
+            --secondary-color: #f1c40f;
+            --dark-color: #333;
+            --light-color: #f9f9f9;
+            --gray-color: #ddd;
+            --success-color: #2ecc71;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: var(--light-color);
+            color: var(--dark-color);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1, h2, h3, h4 {
+            margin: 0;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        h3 {
+            font-size: 1.3rem;
+        }
+        
+        /* Navigation */
+        nav {
+            display: flex;
+            align-items: center;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        nav a:hover, nav a.active {
+            background: var(--primary-dark);
+        }
+        
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            margin-left: 20px;
+        }
+        
+        .search-input {
+            padding: 8px 15px 8px 35px;
+            border-radius: 20px;
+            border: none;
+            width: 200px;
+            outline: none;
+            transition: width 0.3s;
+        }
+        
+        .search-input:focus {
+            width: 250px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--dark-color);
+        }
+        
+        /* Auth Buttons */
+        .auth-buttons button {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            margin-left: 10px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .auth-buttons button:hover {
+            background: white;
+            color: var(--primary-color);
+        }
+        
+        /* Recipe Cards */
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .recipe-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .recipe-img {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .recipe-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .recipe-card:hover .recipe-img img {
+            transform: scale(1.05);
+        }
+        
+        .recipe-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--secondary-color);
+            color: var(--dark-color);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .recipe-content {
+            padding: 20px;
+        }
+        
+        .recipe-title {
+            margin: 0 0 10px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .recipe-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .recipe-author {
+            font-size: 0.8rem;
+            color: #777;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        
+        /* Rating Stars */
+        .stars {
+            color: var(--gray-color);
+            margin: 10px 0;
+        }
+        
+        .stars .rated {
+            color: var(--secondary-color);
+        }
+        
+        .stars i {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        /* Recipe Form */
+        .recipe-form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 700px;
+            margin: 30px auto;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--gray-color);
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        /* Buttons */
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-weight: 500;
+            transition: background 0.3s, transform 0.2s;
+        }
+        
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #666;
+        }
+        
+        .btn-secondary:hover {
+            background: #555;
+        }
+        
+        .btn-success {
+            background: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        
+        /* Featured Section */
+        .featured-section {
+            margin: 40px 0;
+        }
+        
+        .featured-recipes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .featured-card {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 300px;
+        }
+        
+        .featured-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .featured-card:hover img {
+            transform: scale(1.05);
+        }
+        
+        .featured-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 20px;
+            color: white;
+        }
+        
+        /* Top Rated Section */
+        .top-rated {
+            margin: 40px 0;
+        }
+        
+        /* Auth Modal */
+        .auth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .auth-modal.active {
+            display: flex;
+        }
+        
+        .auth-form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            position: relative;
+            animation: slideDown 0.4s ease-out;
+        }
+        
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--gray-color);
+        }
+        
+        .auth-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .auth-tab.active {
+            border-bottom: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark-color);
+            transition: transform 0.2s;
+        }
+        
+        .close-modal:hover {
+            transform: rotate(90deg);
+        }
+        
+        .error-message {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            margin-top: 5px;
+            animation: shake 0.5s;
+        }
+        
+        /* Recipe Detail */
+        .recipe-detail {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .recipe-detail-img {
+            height: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .recipe-detail-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .recipe-detail-img:hover img {
+            transform: scale(1.03);
+        }
+        
+        /* Marquee Section */
+        .marquee-container {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            margin: 20px 0;
+            overflow: hidden;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .marquee {
+            display: flex;
+            animation: marquee 20s linear infinite;
+        }
+        
+        .marquee-item {
+            white-space: nowrap;
+            margin-right: 50px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .marquee-item i {
+            margin-right: 10px;
+            color: var(--secondary-color);
+        }
+        
+        /* About Us Section */
+        .about-section {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin: 40px 0;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        .about-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .about-text {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .about-image {
+            flex: 1;
+            min-width: 300px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .about-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.5s;
+        }
+        
+        .about-image:hover img {
+            transform: scale(1.05);
+        }
+        
+        .team-members {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+        
+        .team-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .team-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .team-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 20px;
+            border: 5px solid var(--primary-color);
+        }
+        
+        .team-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .social-links {
+            margin-top: 15px;
+        }
+        
+        .social-links a {
+            color: var(--primary-color);
+            margin: 0 10px;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+        
+        .social-links a:hover {
+            color: var(--primary-dark);
+        }
+        
+        /* Stats Section */
+        .stats-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 40px 0;
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 200px;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideDown {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            nav {
+                margin-top: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .search-container {
+                margin: 15px 0 0 0;
+            }
+            
+            .auth-buttons {
+                margin-top: 15px;
+            }
+            
+            .recipe-detail-img {
+                height: 250px;
+            }
+            
+            .about-content {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .recipe-grid, .featured-recipes, .team-members {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-section {
+                flex-direction: column;
+            }
+            
+            .stat-card {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body ng-controller="RecipeController as rc">
+    <!-- Auth Modal -->
+    <div class="auth-modal" ng-class="{'active': rc.showAuthModal}">
+        <div class="auth-form">
+            <span class="close-modal" ng-click="rc.closeAuthModal()">&times;</span>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab" ng-class="{'active': rc.authTab === 'login'}" 
+                     ng-click="rc.authTab = 'login'">Login</div>
+                <div class="auth-tab" ng-class="{'active': rc.authTab === 'signup'}" 
+                     ng-click="rc.authTab = 'signup'">Sign Up</div>
+            </div>
+            
+            <div ng-if="rc.authTab === 'login'">
+                <h2>Login</h2>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" ng-model="rc.loginEmail" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" ng-model="rc.loginPassword" placeholder="Enter your password">
+                </div>
+                <div class="error-message" ng-if="rc.loginError">{{rc.loginError}}</div>
+                <button class="btn-success" ng-click="rc.login()">Login</button>
+            </div>
+            
+            <div ng-if="rc.authTab === 'signup'">
+                <h2>Sign Up</h2>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" ng-model="rc.signupName" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" ng-model="rc.signupEmail" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" ng-model="rc.signupPassword" placeholder="Create a password">
+                </div>
+                <div class="error-message" ng-if="rc.signupError">{{rc.signupError}}</div>
+                <button class="btn-success" ng-click="rc.signup()">Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="container header-content">
+            <h1>My Recipe Book</h1>
+            <nav>
+                <a href="#" ng-click="rc.currentView = 'home'" ng-class="{'active': rc.currentView === 'home'}">Home</a>
+                <a href="#" ng-click="rc.currentView = 'recipes'" ng-class="{'active': rc.currentView === 'recipes'}">All Recipes</a>
+                <a href="#" ng-click="rc.currentView = 'my-recipes'" ng-class="{'active': rc.currentView === 'my-recipes'}" ng-if="rc.isLoggedIn">My Recipes</a>
+                <a href="#" ng-click="rc.currentView = 'about'" ng-class="{'active': rc.currentView === 'about'}">About Us</a>
+                
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search recipes..." 
+                           ng-model="rc.searchQuery" ng-change="rc.searchRecipes()">
+                </div>
+                
+                <div class="auth-buttons" ng-if="!rc.isLoggedIn">
+                    <button ng-click="rc.showAuth('login')">Login</button>
+                    <button ng-click="rc.showAuth('signup')">Sign Up</button>
+                </div>
+                <div class="auth-buttons" ng-if="rc.isLoggedIn">
+                    <span style="color: white; margin-right: 10px;">Hi, {{rc.currentUser.name}}</span>
+                    <button ng-click="rc.logout()">Logout</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Marquee Section -->
+        <div class="marquee-container" ng-show="rc.currentView === 'home'">
+            <div class="marquee">
+                <div class="marquee-item">
+                    <i class="fas fa-utensils"></i>
+                    <span>Discover delicious recipes from around the world!</span>
+                </div>
+                <div class="marquee-item">
+                    <i class="fas fa-heart"></i>
+                    <span>Share your favorite recipes with our community!</span>
+                </div>
+                <div class="marquee-item">
+                    <i class="fas fa-star"></i>
+                    <span>Rate and review recipes to help others find the best!</span>
+                </div>
+                <div class="marquee-item">
+                    <i class="fas fa-book"></i>
+                    <span>Create your personal recipe book!</span>
+                </div>
+                <div class="marquee-item">
+                    <i class="fas fa-utensils"></i>
+                    <span>Discover delicious recipes from around the world!</span>
+                </div>
+                <div class="marquee-item">
+                    <i class="fas fa-heart"></i>
+                    <span>Share your favorite recipes with our community!</span>
+                </div>
+                <div class="marquee-item">
+                    <i class="fas fa-star"></i>
+                    <span>Rate and review recipes to help others find the best!</span>
+                </div>
+                <div class="marquee-item">
+                    <i class="fas fa-book"></i>
+                    <span>Create your personal recipe book!</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Home View -->
+        <div ng-show="rc.currentView === 'home'">
+            <section class="featured-section">
+                <h2>Featured Recipes</h2>
+                <div class="featured-recipes">
+                    <div class="featured-card" ng-repeat="recipe in rc.featuredRecipes" ng-click="rc.viewRecipe(recipe)">
+                        <img ng-src="{{recipe.image || 'https://via.placeholder.com/300x200?text=No+Image'}}">
+                        <div class="featured-overlay">
+                            <h3>{{recipe.name}}</h3>
+                            <div class="stars">
+                                <i class="fas fa-star" ng-class="{'rated': star <= recipe.rating}" 
+                                   ng-repeat="star in [1,2,3,4,5]"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="top-rated">
+                <h2>Top Rated Recipes</h2>
+                <div class="recipe-grid">
+                    <div class="recipe-card" ng-repeat="recipe in rc.topRatedRecipes">
+                        <div class="recipe-img">
+                            <img ng-src="{{recipe.image || 'https://via.placeholder.com/300x200?text=No+Image'}}">
+                            <div class="recipe-badge" ng-if="recipe.rating >= 4">Top Rated</div>
+                        </div>
+                        <div class="recipe-content">
+                            <h3 class="recipe-title">{{recipe.name}}</h3>
+                            <div class="recipe-author" ng-if="recipe.author">By {{recipe.author}}</div>
+                            <div class="recipe-meta">
+                                <span>{{recipe.ingredients.split(',').length}} ingredients</span>
+                                <div class="stars">
+                                    <i class="fas fa-star" ng-class="{'rated': star <= recipe.rating}" 
+                                       ng-repeat="star in [1,2,3,4,5]"></i>
+                                </div>
+                            </div>
+                            <button ng-click="rc.viewRecipe(recipe)">View</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Stats Section -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <i class="fas fa-utensils fa-2x"></i>
+                    <div class="stat-number">{{rc.recipes.length}}</div>
+                    <p>Recipes Available</p>
+                </div>
+         
+                <div class="stat-card">
+                    <i class="fas fa-star fa-2x"></i>
+                    <div class="stat-number">{{rc.averageRating | number:1}}</div>
+                    <p>Average Rating</p>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- All Recipes View -->
+        <div ng-show="rc.currentView === 'recipes'">
+            <!-- Add Recipe Button (only for logged in users) -->
+            <div style="text-align: right; margin-bottom: 20px;">
+                <button ng-click="rc.showAddForm()" ng-if="rc.isLoggedIn">
+                    <i class="fas fa-plus"></i> Add Recipe
+                </button>
+                <button ng-click="rc.showAuth('login')" ng-if="!rc.isLoggedIn">
+                    <i class="fas fa-plus"></i> Sign in to Add Recipe
+                </button>
+            </div>
+            
+            <!-- Add Recipe Form -->
+            <div class="recipe-form" ng-show="rc.showForm">
+                <h2>{{rc.editing ? 'Edit Recipe' : 'Add New Recipe'}}</h2>
+                <form ng-submit="rc.saveRecipe()">
+                    <div class="form-group">
+                        <label>Recipe Name</label>
+                        <input type="text" ng-model="rc.currentRecipe.name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select ng-model="rc.currentRecipe.category" required>
+                            <option value="">Select a category</option>
+                            <option value="Breakfast">Breakfast</option>
+                            <option value="Lunch">Lunch</option>
+                            <option value="Dinner">Dinner</option>
+                            <option value="Dessert">Dessert</option>
+                            <option value="Snack">Snack</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Ingredients (comma separated)</label>
+                        <textarea ng-model="rc.currentRecipe.ingredients" required 
+                                  placeholder="Flour, sugar, eggs, etc."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Instructions</label>
+                        <textarea ng-model="rc.currentRecipe.instructions" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input type="text" ng-model="rc.currentRecipe.image" 
+                               placeholder="https://example.com/image.jpg">
+                    </div>
+                    
+                    <button type="submit" class="btn-success">Save</button>
+                    <button type="button" class="btn-secondary" ng-click="rc.cancelEdit()">Cancel</button>
+                </form>
+            </div>
+
+            <!-- Recipe List -->
+            <div ng-show="!rc.showForm">
+                <div class="recipe-grid">
+                    <div class="recipe-card" ng-repeat="recipe in rc.filteredRecipes">
+                        <div class="recipe-img">
+                            <img ng-src="{{recipe.image || 'https://via.placeholder.com/300x200?text=No+Image'}}">
+                            <div class="recipe-badge" ng-if="recipe.rating >= 4">Top Rated</div>
+                        </div>
+                        <div class="recipe-content">
+                            <h3 class="recipe-title">{{recipe.name}}</h3>
+                            <div class="recipe-author" ng-if="recipe.author">By {{recipe.author}}</div>
+                            <div class="recipe-meta">
+                                <span>{{recipe.category}}</span>
+                                <div class="stars">
+                                    <i class="fas fa-star" ng-class="{'rated': star <= recipe.rating}" 
+                                       ng-repeat="star in [1,2,3,4,5]"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="stars" ng-if="rc.isLoggedIn">
+                                <i class="fas fa-star" ng-class="{'rated': star <= recipe.userRating}" 
+                                   ng-repeat="star in [1,2,3,4,5]"
+                                   ng-click="rc.rateRecipe(recipe, star)"></i>
+                            </div>
+                            
+                            <button ng-click="rc.viewRecipe(recipe)">View</button>
+                            <button ng-click="rc.editRecipe(recipe)" ng-if="rc.isLoggedIn && rc.currentUser.email === recipe.authorEmail">Edit</button>
+                            <button ng-click="rc.deleteRecipe(recipe)" ng-if="rc.isLoggedIn && rc.currentUser.email === recipe.authorEmail">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Recipes View -->
+        <div ng-show="rc.currentView === 'my-recipes' && rc.isLoggedIn">
+            <h2>My Recipes</h2>
+            
+            <div style="text-align: right; margin-bottom: 20px;">
+                <button ng-click="rc.showAddForm()">
+                    <i class="fas fa-plus"></i> Add Recipe
+                </button>
+            </div>
+            
+            <!-- Add Recipe Form -->
+            <div class="recipe-form" ng-show="rc.showForm">
+                <h2>{{rc.editing ? 'Edit Recipe' : 'Add New Recipe'}}</h2>
+                <form ng-submit="rc.saveRecipe()">
+                    <div class="form-group">
+                        <label>Recipe Name</label>
+                        <input type="text" ng-model="rc.currentRecipe.name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select ng-model="rc.currentRecipe.category" required>
+                            <option value="">Select a category</option>
+                            <option value="Breakfast">Breakfast</option>
+                            <option value="Lunch">Lunch</option>
+                            <option value="Dinner">Dinner</option>
+                            <option value="Dessert">Dessert</option>
+                            <option value="Snack">Snack</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Ingredients (comma separated)</label>
+                        <textarea ng-model="rc.currentRecipe.ingredients" required 
+                                  placeholder="Flour, sugar, eggs, etc."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Instructions</label>
+                        <textarea ng-model="rc.currentRecipe.instructions" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input type="text" ng-model="rc.currentRecipe.image" 
+                               placeholder="https://example.com/image.jpg">
+                    </div>
+                    
+                    <button type="submit" class="btn-success">Save</button>
+                    <button type="button" class="btn-secondary" ng-click="rc.cancelEdit()">Cancel</button>
+                </form>
+            </div>
+
+            <!-- My Recipes List -->
+            <div ng-show="!rc.showForm">
+                <div class="recipe-grid" ng-if="rc.myRecipes.length > 0">
+                    <div class="recipe-card" ng-repeat="recipe in rc.myRecipes">
+                        <div class="recipe-img">
+                            <img ng-src="{{recipe.image || 'https://via.placeholder.com/300x200?text=No+Image'}}">
+                            <div class="recipe-badge" ng-if="recipe.rating >= 4">Top Rated</div>
+                        </div>
+                        <div class="recipe-content">
+                            <h3 class="recipe-title">{{recipe.name}}</h3>
+                            <div class="recipe-meta">
+                                <span>{{recipe.category}}</span>
+                                <div class="stars">
+                                    <i class="fas fa-star" ng-class="{'rated': star <= recipe.rating}" 
+                                       ng-repeat="star in [1,2,3,4,5]"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="stars">
+                                <i class="fas fa-star" ng-class="{'rated': star <= recipe.userRating}" 
+                                   ng-repeat="star in [1,2,3,4,5]"
+                                   ng-click="rc.rateRecipe(recipe, star)"></i>
+                            </div>
+                            
+                            <button ng-click="rc.viewRecipe(recipe)">View</button>
+                            <button ng-click="rc.editRecipe(recipe)">Edit</button>
+                            <button ng-click="rc.deleteRecipe(recipe)">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div ng-if="rc.myRecipes.length === 0" style="text-align: center; padding: 40px;">
+                    <h3>You haven't added any recipes yet</h3>
+                    <button ng-click="rc.showAddForm()" style="margin-top: 20px;">
+                        <i class="fas fa-plus"></i> Add Your First Recipe
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recipe Detail View -->
+        <div ng-show="rc.currentView === 'recipe-detail' && rc.selectedRecipe">
+            <div style="text-align: right; margin-bottom: 20px;">
+                <button ng-click="rc.backToList()"><i class="fas fa-arrow-left"></i> Back to {{rc.previousView === 'my-recipes' ? 'My Recipes' : 'Recipes'}}</button>
+            </div>
+            
+            <div class="recipe-detail">
+                <div style="display: flex; gap: 30px; margin-bottom: 30px;">
+                    <div style="flex: 1;">
+                        <div class="recipe-detail-img">
+                            <img ng-src="{{rc.selectedRecipe.image || 'https://via.placeholder.com/600x400?text=No+Image'}}">
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <h2>{{rc.selectedRecipe.name}}</h2>
+                        <div class="recipe-meta" style="margin-bottom: 20px;">
+                            <span><strong>Category:</strong> {{rc.selectedRecipe.category}}</span>
+                            <div class="stars">
+                                <i class="fas fa-star" ng-class="{'rated': star <= rc.selectedRecipe.rating}" 
+                                   ng-repeat="star in [1,2,3,4,5]"></i>
+                                <span>({{rc.selectedRecipe.rating | number:1}}/5)</span>
+                            </div>
+                        </div>
+                        
+                        <div ng-if="rc.selectedRecipe.author" style="margin-bottom: 20px;">
+                            <p><strong>Author:</strong> {{rc.selectedRecipe.author}}</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h3>Ingredients</h3>
+                            <ul>
+                                <li ng-repeat="ingredient in rc.selectedRecipe.ingredients.split(',')">
+                                    {{ingredient.trim()}}
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div ng-if="rc.isLoggedIn" style="margin-bottom: 20px;">
+                            <h4>Rate this recipe:</h4>
+                            <div class="stars">
+                                <i class="fas fa-star" ng-class="{'rated': star <= rc.selectedRecipe.userRating}" 
+                                   ng-repeat="star in [1,2,3,4,5]"
+                                   ng-click="rc.rateRecipe(rc.selectedRecipe, star)"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3>Instructions</h3>
+                    <p style="white-space: pre-line;">{{rc.selectedRecipe.instructions}}</p>
+                </div>
+                
+                <div style="margin-top: 30px; text-align: right;" ng-if="rc.isLoggedIn && rc.currentUser.email === rc.selectedRecipe.authorEmail">
+                    <button ng-click="rc.editRecipe(rc.selectedRecipe)">Edit Recipe</button>
+                    <button ng-click="rc.deleteRecipe(rc.selectedRecipe)">Delete Recipe</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- About Us View -->
+        <div ng-show="rc.currentView === 'about'">
+            <div class="about-section">
+                <h2>About My Recipe Book</h2>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p>Welcome to <strong>My Recipe Book</strong>, your ultimate destination for discovering, sharing, and preserving your favorite recipes from around the world!</p>
+                        
+                                               <p>What makes us special:</p>
+                        <ul>
+                            <li>A diverse collection of recipes from various cuisines</li>
+                            <li>Easy-to-use tools to create and organize your personal recipe book</li>
+                            <li>Community-driven ratings and reviews</li>
+                            <li>Beautiful presentation to make your recipes shine</li>
+                        </ul>
+                        
+                        <p>Join our growing community of food enthusiasts today and start sharing your culinary masterpieces!</p>
+                    </div>
+                    <div class="about-image">
+                        <img src="https://images.unsplash.com/photo-1466637574441-749b8f19452f" alt="Cooking ingredients">
+                    </div>
+                </div>
+                
+                           
+            <!-- Testimonials Marquee -->
+            <div class="marquee-container" style="background: var(--dark-color); margin-top: 40px;">
+                <div class="marquee">
+                    <div class="marquee-item">
+                        <i class="fas fa-quote-left"></i>
+                        <span>"This platform changed how I cook! So many amazing recipes!" - Jane D.</span>
+                    </div>
+                    <div class="marquee-item">
+                        <i class="fas fa-quote-left"></i>
+                        <span>"Finally a place to organize all my family recipes!" - Mark T.</span>
+                    </div>
+                    <div class="marquee-item">
+                        <i class="fas fa-quote-left"></i>
+                        <span>"The community is so supportive and creative!" - Priya K.</span>
+                    </div>
+                    <div class="marquee-item">
+                        <i class="fas fa-quote-left"></i>
+                        <span>"Made me fall in love with cooking again!" - Carlos M.</span>
+                    </div>
+                    <div class="marquee-item">
+                        <i class="fas fa-quote-left"></i>
+                        <span>"This platform changed how I cook! So many amazing recipes!" - Jane D.</span>
+                    </div>
+                    <div class="marquee-item">
+                        <i class="fas fa-quote-left"></i>
+                        <span>"Finally a place to organize all my family recipes!" - Mark T.</span>
+                    </div>
+                    <div class="marquee-item">
+                        <i class="fas fa-quote-left"></i>
+                        <span>"The community is so supportive and creative!" - Priya K.</span>
+                    </div>
+                    <div class="marquee-item">
+                        <i class="fas fa-quote-left"></i>
+                        <span>"Made me fall in love with cooking again!" - Carlos M.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        angular.module('recipeApp', [])
+        .controller('RecipeController', function() {
+            var vm = this;
+            
+            // Initialize app state
+            vm.currentView = 'home';
+            vm.previousView = 'recipes';
+            vm.showForm = false;
+            vm.editing = false;
+            vm.showAuthModal = false;
+            vm.authTab = 'login';
+            vm.isLoggedIn = false;
+            vm.currentUser = null;
+            vm.searchQuery = '';
+            vm.loginError = '';
+            vm.signupError = '';
+            vm.userCount = 12500;
+            vm.averageRating = 4.3;
+            
+            // Sample recipes with author information
+            vm.recipes = [
+                {
+                    id: 1,
+                    name: "Chocolate Chip Cookies",
+                    category: "Dessert",
+                    ingredients: "Flour, sugar, eggs, chocolate chips, butter, vanilla extract, baking soda, salt",
+                    instructions: "1. Preheat oven to 350°F (175°C)\n2. Mix dry ingredients in one bowl\n3. Cream butter and sugar, then add eggs and vanilla\n4. Combine wet and dry ingredients\n5. Fold in chocolate chips\n6. Drop spoonfuls onto baking sheet\n7. Bake for 10-12 minutes until golden brown",
+                    image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35",
+                    rating: 4.5,
+                    userRating: 0,
+                    author: "Admin",
+                    authorEmail: "admin@recipebook.com"
+                },
+                {
+                    id: 2,
+                    name: "Vegetable Stir Fry",
+                    category: "Dinner",
+                    ingredients: "Broccoli, bell peppers, carrots, snap peas, garlic, ginger, soy sauce, sesame oil, vegetable oil",
+                    instructions: "1. Chop all vegetables into bite-sized pieces\n2. Heat oil in wok or large pan\n3. Add garlic and ginger, stir for 30 seconds\n4. Add vegetables, starting with the ones that take longest to cook\n5. Stir fry for 5-7 minutes until crisp-tender\n6. Add soy sauce and sesame oil\n7. Serve over rice",
+                    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+                    rating: 4,
+                    userRating: 0,
+                    author: "Admin",
+                    authorEmail: "admin@recipebook.com"
+                },
+                {
+                    id: 3,
+                    name: "Avocado Toast",
+                    category: "Breakfast",
+                    ingredients: "Bread, avocado, lemon juice, salt, pepper, red pepper flakes, olive oil",
+                    instructions: "1. Toast bread to desired crispness\n2. Mash avocado with lemon juice, salt and pepper\n3. Spread avocado mixture on toast\n4. Drizzle with olive oil and sprinkle with red pepper flakes",
+                    image: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b",
+                    rating: 3.5,
+                    userRating: 0,
+                    author: "Admin",
+                    authorEmail: "admin@recipebook.com"
+                },
+                {
+                    id: 4,
+                    name: "Classic Burger",
+                    category: "Lunch",
+                    ingredients: "Ground beef, salt, pepper, burger buns, lettuce, tomato, onion, cheese, ketchup, mustard",
+                    instructions: "1. Form ground beef into patties, season with salt and pepper\n2. Grill or pan-fry to desired doneness\n3. Toast buns lightly\n4. Assemble with toppings and condiments",
+                    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
+                    rating: 4.8,
+                    userRating: 0,
+                    author: "Admin",
+                    authorEmail: "admin@recipebook.com"
+                }
+            ];
+            
+            // Current recipe being edited/viewed
+            vm.currentRecipe = {};
+            vm.selectedRecipe = null;
+            vm.filteredRecipes = vm.recipes;
+            
+            // Featured recipes (for home page)
+            vm.featuredRecipes = [
+                vm.recipes[3], // Classic Burger
+                vm.recipes[1], // Vegetable Stir Fry
+                vm.recipes[0]  // Chocolate Chip Cookies
+            ];
+            
+            // Get top rated recipes (rating >= 4)
+            vm.topRatedRecipes = vm.recipes.filter(function(recipe) {
+                return recipe.rating >= 4;
+            }).sort(function(a, b) {
+                return b.rating - a.rating;
+            });
+            
+            // Get user's recipes
+            vm.getMyRecipes = function() {
+                if (vm.isLoggedIn) {
+                    vm.myRecipes = vm.recipes.filter(function(recipe) {
+                        return recipe.authorEmail === vm.currentUser.email;
+                    });
+                } else {
+                    vm.myRecipes = [];
+                }
+            };
+            
+            // Search recipes
+            vm.searchRecipes = function() {
+                if (!vm.searchQuery) {
+                    vm.filteredRecipes = vm.recipes;
+                    return;
+                }
+                
+                var query = vm.searchQuery.toLowerCase();
+                vm.filteredRecipes = vm.recipes.filter(function(recipe) {
+                    return recipe.name.toLowerCase().includes(query) || 
+                           recipe.ingredients.toLowerCase().includes(query) ||
+                           recipe.category.toLowerCase().includes(query) ||
+                           (recipe.author && recipe.author.toLowerCase().includes(query));
+                });
+            };
+            
+            // Rating function
+            vm.rateRecipe = function(recipe, rating) {
+                if (!vm.isLoggedIn) {
+                    vm.showAuth('login');
+                    return;
+                }
+                
+                recipe.userRating = rating;
+                
+                // Update overall rating (simplified - in real app would average all user ratings)
+                // Only update if this is not the user's own recipe
+                if (recipe.authorEmail !== vm.currentUser.email) {
+                    recipe.rating = (recipe.rating + rating) / 2;
+                }
+            };
+            
+            // Show add form
+            vm.showAddForm = function() {
+                if (!vm.isLoggedIn) {
+                    vm.showAuth('login');
+                    return;
+                }
+                
+                vm.currentRecipe = { 
+                    rating: 0,
+                    userRating: 0,
+                    category: "",
+                    author: vm.currentUser.name,
+                    authorEmail: vm.currentUser.email
+                };
+                vm.editing = false;
+                vm.showForm = true;
+                
+                if (vm.currentView === 'my-recipes') {
+                    vm.previousView = 'my-recipes';
+                } else {
+                    vm.previousView = 'recipes';
+                }
+                
+                vm.currentView = 'recipes';
+            };
+            
+            // Edit recipe
+            vm.editRecipe = function(recipe) {
+                if (!vm.isLoggedIn) {
+                    vm.showAuth('login');
+                    return;
+                }
+                
+                // Only allow editing if user is the author
+                if (recipe.authorEmail !== vm.currentUser.email) {
+                    alert('You can only edit your own recipes');
+                    return;
+                }
+                
+                vm.currentRecipe = angular.copy(recipe);
+                vm.editing = true;
+                vm.showForm = true;
+                
+                if (vm.currentView === 'my-recipes') {
+                    vm.previousView = 'my-recipes';
+                } else {
+                    vm.previousView = 'recipes';
+                }
+                
+                vm.currentView = 'recipes';
+            };
+            
+            // View recipe details
+            vm.viewRecipe = function(recipe) {
+                vm.selectedRecipe = angular.copy(recipe);
+                vm.previousView = vm.currentView;
+                vm.currentView = 'recipe-detail';
+            };
+            
+            // Back to list view
+            vm.backToList = function() {
+                vm.currentView = vm.previousView;
+                vm.selectedRecipe = null;
+            };
+            
+            // Save recipe (add or update)
+            vm.saveRecipe = function() {
+                if (!vm.isLoggedIn) {
+                    vm.showAuth('login');
+                    return;
+                }
+                
+                if (vm.editing) {
+                    // Update existing recipe
+                    var index = vm.recipes.findIndex(function(r) {
+                        return r.id === vm.currentRecipe.id;
+                    });
+                    
+                    if (index !== -1) {
+                        // Preserve the rating and author info
+                        vm.currentRecipe.rating = vm.recipes[index].rating;
+                        vm.currentRecipe.userRating = vm.recipes[index].userRating;
+                        vm.currentRecipe.author = vm.recipes[index].author;
+                        vm.currentRecipe.authorEmail = vm.recipes[index].authorEmail;
+                        
+                        vm.recipes[index] = angular.copy(vm.currentRecipe);
+                    }
+                } else {
+                    // Add new recipe
+                    vm.currentRecipe.id = vm.recipes.length > 0 ? 
+                        Math.max.apply(null, vm.recipes.map(function(r) { return r.id; })) + 1 : 1;
+                    vm.currentRecipe.rating = 0;
+                    vm.currentRecipe.userRating = 0;
+                    vm.currentRecipe.author = vm.currentUser.name;
+                    vm.currentRecipe.authorEmail = vm.currentUser.email;
+                    
+                    vm.recipes.push(angular.copy(vm.currentRecipe));
+                }
+                
+                // Update filtered recipes and my recipes
+                vm.searchRecipes();
+                vm.getMyRecipes();
+                
+                // Reset form
+                vm.cancelEdit();
+            };
+            
+            // Cancel edit/add
+            vm.cancelEdit = function() {
+                vm.currentRecipe = {};
+                vm.showForm = false;
+                vm.editing = false;
+            };
+            
+           angular.module('recipeApp', [])
+.controller('RecipeController', ['$http', function($http) {
+    var vm = this;
+    
+    // Initialize
+    vm.loadRecipes = function() {
+        $http.get('api.php?action=getRecipes')
+            .then(function(response) {
+                vm.recipes = response.data;
+                vm.filteredRecipes = vm.recipes;
+                // Update featured and top-rated recipes
+                vm.featuredRecipes = vm.recipes.slice(0, 3);
+                vm.topRatedRecipes = vm.recipes.filter(function(recipe) {
+                    return recipe.rating >= 4;
+                }).sort(function(a, b) {
+                    return b.rating - a.rating;
+                });
+            })
+            .catch(function(error) {
+                console.error('Error loading recipes:', error);
+            });
+    };
+    
+    // Save recipe function
+    vm.saveRecipe = function() {
+        if (vm.editing) {
+            // Update existing recipe
+            $http.put('api.php?action=updateRecipe&id=' + vm.currentRecipe.id, vm.currentRecipe)
+                .then(function(response) {
+                    vm.loadRecipes();
+                    vm.cancelEdit();
+                });
+        } else {
+            // Add new recipe
+            $http.post('api.php?action=addRecipe', vm.currentRecipe)
+                .then(function(response) {
+                    vm.loadRecipes();
+                    vm.cancelEdit();
+                });
+        }
+    };
+    
+    // Delete recipe function
+    vm.deleteRecipe = function(recipe) {
+        if (confirm('Are you sure you want to delete this recipe?')) {
+            $http.delete('api.php?action=deleteRecipe&id=' + recipe.id)
+                .then(function(response) {
+                    vm.loadRecipes();
+                    if (vm.currentView === 'recipe-detail' && vm.selectedRecipe && vm.selectedRecipe.id === recipe.id) {
+                        vm.backToList();
+                    }
+                });
+        }
+    };
+    
+    // Initialize the app
+    vm.loadRecipes();
+}]);            
+            // Auth functions
+            vm.showAuth = function(tab) {
+                vm.authTab = tab || 'login';
+                vm.showAuthModal = true;
+                vm.loginError = '';
+                vm.signupError = '';
+            };
+            
+            vm.closeAuthModal = function() {
+                vm.showAuthModal = false;
+            };
+            
+            vm.login = function() {
+                // Simple validation
+                if (!vm.loginEmail || !vm.loginPassword) {
+                    vm.loginError = 'Please enter both email and password';
+                    return;
+                }
+                
+                // In a real app, this would call an API
+                // For demo purposes, we'll just check for admin@recipebook.com / password
+                if (vm.loginEmail === 'admin@recipebook.com' && vm.loginPassword === 'password') {
+                    vm.isLoggedIn = true;
+                    vm.currentUser = {
+                        name: 'Admin',
+                        email: 'admin@recipebook.com'
+                    };
+                    vm.showAuthModal = false;
+                    vm.getMyRecipes();
+                } else {
+                    // For demo, any other email/password will work as a "new user"
+                    vm.isLoggedIn = true;
+                    vm.currentUser = {
+                        name: vm.loginEmail.split('@')[0],
+                        email: vm.loginEmail
+                    };
+                    vm.showAuthModal = false;
+                    vm.getMyRecipes();
+                }
+            };
+            
+            vm.signup = function() {
+                // Simple validation
+                if (!vm.signupName || !vm.signupEmail || !vm.signupPassword) {
+                    vm.signupError = 'Please fill in all fields';
+                    return;
+                }
+                
+                // In a real app, this would call an API
+                vm.isLoggedIn = true;
+                vm.currentUser = {
+                    name: vm.signupName,
+                    email: vm.signupEmail
+                };
+                vm.showAuthModal = false;
+                vm.getMyRecipes();
+                vm.userCount++; // Increment user count for demo
+            };
+            
+            vm.logout = function() {
+                vm.isLoggedIn = false;
+                vm.currentUser = null;
+                vm.myRecipes = [];
+                
+                // If we're in my-recipes view, go to home
+                if (vm.currentView === 'my-recipes') {
+                    vm.currentView = 'home';
+                }
+            };
+            
+            // Initialize
+            vm.getMyRecipes();
+        });
+    </script>
+</body>
+</html>
