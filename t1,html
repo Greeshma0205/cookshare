@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <title>P GREESHMA REDDY - Portfolio</title>
+</head>
+<body>
+
+  <h1 style="color: brown; font-size: 36px; text-align: center; font-family: Arial, sans-serif;">P GREESHMA REDDY</h1>
+
+  <section>
+    <h2>About Me</h2>
+    <p>
+     I am a  BCA student who enjoys learning new things, especially in web development and technology. 
+    I like creating websites and finding ways to solve problems through coding. 
+    In my free time, I enjoy listening to music, watching movies, and spending time with my family and friends. 
+    I believe in working hard and always trying to improve myself.
+    </p>
+  </section>
+
+  <section>
+    <h2>Skills</h2>
+    <ol>
+      <li>HTML & CSS</li>
+      <li>JavaScript</li>
+      <li>Java Programming</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Interests</h2>
+    <ul>
+      <li>Web Development</li>
+      <li>Artificial Intelligence</li>
+      <li>Problem Solving</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Projects</h2>
+    
+    <h3>Recipe Sharing Website</h3>
+    <p>A simple website where users can share and rate recipes</p>
+    <a href="https://greeshma0205.github.io/cookshare/">view Project</a>
+</section>
+
+  <section>
+    <h2>Contact Information</h2>
+    <p>Email: <a href="mailto:greeshma.pagala@gmail.com">greeshma.pagala@gmail.com</a></p>
+    <p>Linkedin:<a href="https://www.linkedin.com/in/greeshma-reddy-54a5ba288/">LinkedIn</a></p>
+    <p>GitHub: <a href="https://github.com/Greeshma0205/" target="_blank">GitHub</a></p>
+
+  </section>
+
+</body>
+</html>
